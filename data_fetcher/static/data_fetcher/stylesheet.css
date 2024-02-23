@@ -1,0 +1,81 @@
+.body{
+    margin: 0;
+    padding: 0;
+}
+.container {
+    margin: 0;
+    padding: 0;
+    display: grid;
+    max-width: 100%;
+    grid-template-columns: auto;
+    grid-template-rows: auto auto auto auto;
+    grid-template-areas:
+        "header"
+        "nav"
+        "main"
+        "footer";
+}
+
+  /* Page content. The value of the margin-left property should match the value of the sidebar's width property */
+  div.content {
+    margin-left: 200px;
+    padding: 1px 16px;
+    height: 100%;
+}
+
+.header {
+    margin: 0;
+    padding: 0;
+    grid-area: header;
+    padding: 20px;
+    background-color: #3b5998;
+    color: #fff;
+    text-align: center;
+}
+
+
+
+/* The side navigation menu */
+.sidebar {
+    margin: 0;
+    padding: 0;
+    width: 200px;
+    background-color: #f1f1f1;
+    position: fixed;
+    height: 100%;
+    top: 0;
+    overflow: auto;
+    text-align: center;
+    float: none;
+  }
+  
+  /* Sidebar links */
+  .sidebar a {
+    display: block;
+    color: black;
+    padding: 16px;
+    text-decoration: none;
+  }
+
+  /* Links on mouse-over */
+  .sidebar a:hover {
+    background-color: #555;
+    color: white;
+  }
+  
+.generator-section{
+    background-color: #fff;
+    padding: 20px;
+    margin: 15px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);   
+}
+
+
+th, td {
+    border: 1px solid black; /* Add a 1px solid black border */
+}
+
+table {
+    border-collapse: collapse;
+}

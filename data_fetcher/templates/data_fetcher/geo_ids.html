@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+  <head>
+		<meta charset="utf-8"></meta>
+		<title>Datenbank Projekt: Länder und GeoIDs</title>
+ </head>
+ <body>
+	 <h3>Tabelle von Ländern und GeoIDs</h3>
+   <ul>
+     {% for place in geo %}
+     <li>{{ place.geo_id }} - {{ place.country_territory}}</li>
+     {% endfor %}
+   </ul>
+ </body>
+</html>

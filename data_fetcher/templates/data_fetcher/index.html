@@ -1,0 +1,404 @@
+<!doctype html>
+<html>
+   <head>
+      <meta charset="utf-8">
+      </meta>
+      <title>Databasesytems Project: Visualizing Covid-19 Data</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="This website provides tools to visualize the course of the coronavirus epidemic in different countries">
+      <meta name="author" content="Databasesystems Project: Visualizing Covid-19 Data">
+      {% load static %}
+      <script type="text/javascript" src="{% static "data_fetcher/plotting.js" %}"></script>
+      <script type="text/javascript" src="{% static "data_fetcher/jquery.js" %}"></script>
+      <script type="text/javascript" src="{% static "data_fetcher/axios.js" %}"></script>
+      <script type="text/javascript" src="{% static "data_fetcher/jquery.form.min.js" %}"></script>
+      <script type="text/javascript" src="{% static "data_fetcher/jquery.flot.min.js" %}"></script>
+      <script type="text/javascript" src="{% static "data_fetcher/jquery.flot.time.min.js" %}"></script>
+      <script type="text/javascript" src="{% static "data_fetcher/jquery.flot.symbol.min.js" %}"></script>
+      <script type="text/javascript" src="{% static "data_fetcher/jquery.flot.axislabels.js" %}"></script>
+      <script type="text/javascript" src="{% static "data_fetcher/forms.js" %}"></script>
+      <script type="text/javascript" src="{% static "data_fetcher/buttons.js" %}"></script>
+      <script type="text/javascript" src="{% static "data_fetcher/sidebars.js" %}"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+      <link rel="stylesheet" href="{% static 'data_fetcher/stylesheet.css' %}">
+   </head>
+   <body class="body">
+      <div class="container">
+      <header class="header">
+         <h2>Databasesystems Project: Visualizing Covid-19 Data</h2>
+      </header>
+      <nav class="nav">
+      <div class="sidebar">
+         <a class="active" href="#metric_over_time">Line Chart Generator</a>
+         <a href="#bar_charts">Bar Chart Generator</a> 
+         <a href="#Country-Specific">Table Overview</a>
+      </div>
+      </nav class="nav">
+      <main class="main">
+         <div class="content">
+            <div class="generator-section">
+               <h3 id="metric_over_time">Line Chart Generator</h3>
+               <p id="test"> Fill out the form below to generate a graph displaying new cases per day, daily deaths or the infectionrate (cumulative infections per 100.000 people in the last 14 days) over time in a country or territory.
+                  You can select multiple countries by holding down CTRL or COMMAND on Mac.
+               </p>
+               <form id="myForm" action="records" method="GET">
+                  <label for="geo_ids"> Country or territory: </label>
+                  <select class="inputbox" id="country/territory" name="country/territory[]", multiple>
+                     {% for place in geo %}
+                     <option value="{{place.geo_id}}"> {{ place.geo_id }} - {{ place.country_territory }} </option>
+                     {% endfor %}
+                  </select>
+                  <label for='dates'> Start: </label>
+                  <select id="min_date_reps" name="min_date_reps">
+                     {% for date in dates %}
+                     <option value="{{ date.date_rep }}"> {{ date.date_rep }} </option>
+                     {% endfor %}
+                  </select>
+                  <label for='dates'> End: </label>
+                  <select id="max_date_reps" name="max_date_reps">
+                     {% for date in dates %}
+                     <option value="{{ date.date_rep }}"> {{ date.date_rep }} </option>
+                     {% endfor %}
+                  </select>
+                  <input type="submit" value="Show">
+                  <button type="button" onclick="buttonFunc()"> Hide  </button>
+               </form>
+               <br>
+               <p id="p_cases_per_day" style="display: none;" >New Cases per day:</p>
+               <div id="placeholder" style="width:0px;height:0px"></div>
+               <br>
+               <p id="p_deaths_per_day" style="display: none;">Deaths per day: </p>
+               <div id="placeholder2" style="width:0px;height:0px"></div>
+               <br>
+               <p id="p_infectionrate" style="display: none;">Infectionrate:
+               <p>
+               <div id="placeholder3" style="width:0px;height:0px"></div>
+            </div>
+            <div class="generator-section">
+               <h3 id="bar_charts">Bar Chart Generator</h3>
+               <h4>Countries with the highest/lowest:</h4>
+               <h4>Average Infectionrate</h4>
+               <p> Select "Descending" for the countries with the lowest infection rate and "Ascending" for the countries with the highest rate.</p>
+               <form id="myForm2" action="countries_by_infectionrate" method="GET">
+                  <label for="count"> Top x countries or territories: </label>
+                  <input type="text" id="num_count" name="num_count">
+                  <label for='dates'> Start: </label>
+                  <select id="min_date_reps" name="min_date_reps">
+                     {% for date in dates %}
+                     <option value="{{ date.date_rep }}"> {{ date.date_rep }} </option>
+                     {% endfor %}
+                  </select>
+                  <label for='dates'> End: </label>
+                  <select id="max_date_reps" name="max_date_reps">
+                     {% for date in dates %}
+                     <option value="{{ date.date_rep }}"> {{ date.date_rep }} </option>
+                     {% endfor %}
+                  </select>
+                  <label for='order'> Ordering: </label>
+                  <select id="order" name="order">
+                     <option value="desc"> Descending </option>
+                     <option value="asc"> Ascending </option>
+                  </select>
+                  <label for"continent"> Restrict to continent: </label>
+                  <select id="continent" name="continent">
+                     <option value="Asia"> Asia </option>
+                     <option value="Europe"> Europe </option>
+                     <option value="America"> America </option>
+                     <option value="Africa"> Africa </option>
+                     <option value="Oceania"> Oceania </option>
+                     <option value="None"> No Restriction </option>
+                  </select>
+                  <input type="submit" value="Show">
+                  <button type="button" onclick="buttonFunc2()"> Hide  </button>
+               </form>
+               <div id="placeholder4" style="width:0px;height:0px"></div>
+               <h4>Number of Cases</h4>
+               <form id="myForm4" action="countries_by_sum_cases" method="GET">
+                  <label for="count"> Top x countries or territories: </label>
+                  <input type="text" id="num_count" name="num_count">
+                  <label for='dates'> Start: </label>
+                  <select id="min_date_reps" name="min_date_reps">
+                     {% for date in dates %}
+                     <option value="{{ date.date_rep }}"> {{ date.date_rep }} </option>
+                     {% endfor %}
+                  </select>
+                  <label for='dates'> End: </label>
+                  <select id="max_date_reps" name="max_date_reps">
+                     {% for date in dates %}
+                     <option value="{{ date.date_rep }}"> {{ date.date_rep }} </option>
+                     {% endfor %}
+                  </select>
+                  <label for='order'> Ordering: </label>
+                  <select id="order" name="order">
+                     <option value="desc"> Descending </option>
+                     <option value="asc"> Ascending </option>
+                  </select>
+                  <label for"continent"> Restrict to continent: </label>
+                  <select id="continent" name="continent">
+                     <option value="Asia"> Asia </option>
+                     <option value="Europe"> Europe </option>
+                     <option value="America"> America </option>
+                     <option value="Africa"> Africa </option>
+                     <option value="Oceania"> Oceania </option>
+                     <option value="None"> No Restriction </option>
+                  </select>
+                  <input type="submit" value="Show">
+                  <button type="button" onclick="buttonFunc4()"> Hide  </button>
+               </form>
+               <div id="placeholder5" style="width:0px;height:0px"></div>
+               <br>
+               <h4>Number of Deaths</h4>
+               <form id="myForm5" action="countries_by_sum_deaths" method="GET">
+                  <label for="count"> Top x countries or territories: </label>
+                  <input type="text" id="num_count" name="num_count">
+                  <label for='dates'> Start: </label>
+                  <select id="min_date_reps" name="min_date_reps">
+                     {% for date in dates %}
+                     <option value="{{ date.date_rep }}"> {{ date.date_rep }} </option>
+                     {% endfor %}
+                  </select>
+                  <label for='dates'> End: </label>
+                  <select id="max_date_reps" name="max_date_reps">
+                     {% for date in dates %}
+                     <option value="{{ date.date_rep }}"> {{ date.date_rep }} </option>
+                     {% endfor %}
+                  </select>
+                  <label for='order'> Ordering: </label>
+                  <select id="order" name="order">
+                     <option value="desc"> Descending </option>
+                     <option value="asc"> Ascending </option>
+                  </select>
+                  <label for"continent"> Restrict to continent: </label>
+                  <select id="continent" name="continent">
+                     <option value="Asia"> Asia </option>
+                     <option value="Europe"> Europe </option>
+                     <option value="America"> America </option>
+                     <option value="Africa"> Africa </option>
+                     <option value="Oceania"> Oceania </option>
+                     <option value="None"> No Restriction </option>
+                  </select>
+                  <input type="submit" value="Show">
+                  <button type="button" onclick="buttonFunc5()"> Hide  </button>
+               </form>
+               <div id="placeholder6" style="width:0px;height:0px"></div>
+               <br>
+               <h4>Cases per Capita</h4>
+               <form id="myForm6" action="countries_by_cases_per_pop" method="GET">
+                  <label for="count"> Top x countries or territories: </label>
+                  <input type="text" id="num_count" name="num_count">
+                  <label for='dates'> Start: </label>
+                  <select id="min_date_reps" name="min_date_reps">
+                     {% for date in dates %}
+                     <option value="{{ date.date_rep }}"> {{ date.date_rep }} </option>
+                     {% endfor %}
+                  </select>
+                  <label for='dates'> End: </label>
+                  <select id="max_date_reps" name="max_date_reps">
+                     {% for date in dates %}
+                     <option value="{{ date.date_rep }}"> {{ date.date_rep }} </option>
+                     {% endfor %}
+                  </select>
+                  <label for='order'> Ordering: </label>
+                  <select id="order" name="order">
+                     <option value="desc"> Descending </option>
+                     <option value="asc"> Ascending </option>
+                  </select>
+                  <label for"continent"> Restrict to continent: </label>
+                  <select id="continent" name="continent">
+                     <option value="Asia"> Asia </option>
+                     <option value="Europe"> Europe </option>
+                     <option value="America"> America </option>
+                     <option value="Africa"> Africa </option>
+                     <option value="Oceania"> Oceania </option>
+                     <option value="None"> No Restriction </option>
+                  </select>
+                  <input type="submit" value="Show">
+                  <button type="button" onclick="buttonFunc6()"> Hide  </button>
+               </form>
+               <div id="placeholder7" style="width:0px;height:0px"></div>
+               <br>
+               <h4> Deaths per Capita</h4>
+               <form id="myForm7" action="countries_by_deaths_per_pop" method="GET">
+                  <label for="count"> Top x countries or territories: </label>
+                  <input type="text" id="num_count" name="num_count">
+                  <label for='dates'> Start: </label>
+                  <select id="min_date_reps" name="min_date_reps">
+                     {% for date in dates %}
+                     <option value="{{ date.date_rep }}"> {{ date.date_rep }} </option>
+                     {% endfor %}
+                  </select>
+                  <label for='dates'> End: </label>
+                  <select id="max_date_reps" name="max_date_reps">
+                     {% for date in dates %}
+                     <option value="{{ date.date_rep }}"> {{ date.date_rep }} </option>
+                     {% endfor %}
+                  </select>
+                  <label for='order'> Ordering: </label>
+                  <select id="order" name="order">
+                     <option value="desc"> Descending </option>
+                     <option value="asc"> Ascending </option>
+                  </select>
+                  <label for"continent"> Restrict to continent: </label>
+                  <select id="continent" name="continent">
+                     <option value="Asia"> Asia </option>
+                     <option value="Europe"> Europe </option>
+                     <option value="America"> America </option>
+                     <option value="Africa"> Africa </option>
+                     <option value="Oceania"> Oceania </option>
+                     <option value="None"> No Restriction </option>
+                  </select>
+                  <input type="submit" value="Show">
+                  <button type="button" onclick="buttonFunc7()"> Hide  </button>
+               </form>
+               <div id="placeholder8" style="width:0px;height:0px"></div>
+               <br>
+               <h4>Deaths per Infection</h4>
+               <form id="myForm8" action="countries_by_deathrate" method="GET">
+                  <label for="count"> Top x countries or territories: </label>
+                  <input type="text" id="num_count" name="num_count">
+                  <label for='dates'> Start: </label>
+                  <select id="min_date_reps" name="min_date_reps">
+                     {% for date in dates %}
+                     <option value="{{ date.date_rep }}"> {{ date.date_rep }} </option>
+                     {% endfor %}
+                  </select>
+                  <label for='dates'> End: </label>
+                  <select id="max_date_reps" name="max_date_reps">
+                     {% for date in dates %}
+                     <option value="{{ date.date_rep }}"> {{ date.date_rep }} </option>
+                     {% endfor %}
+                  </select>
+                  <label for='order'> Ordering: </label>
+                  <select id="order" name="order">
+                     <option value="desc"> Descending </option>
+                     <option value="asc"> Ascending </option>
+                  </select>
+                  <label for"continent"> Restrict to Continent: </label>
+                  <select id="continent" name="continent">
+                     <option value="Asia"> Asia </option>
+                     <option value="Europe"> Europe </option>
+                     <option value="America"> America </option>
+                     <option value="Africa"> Africa </option>
+                     <option value="Oceania"> Oceania </option>
+                     <option value="None"> No Restriction </option>
+                  </select>
+                  <input type="submit" value="Show">
+                  <button type="button" onclick="buttonFunc8()"> Hide  </button>
+               </form>
+               <div id="placeholder9" style="width:0px;height:0px"></div>
+               <br>
+            </div>
+            <div class="generator-section">
+               <h3 id="Country-Specific">Table Overview</h3>
+               <p>The data was recorded between December 31, 2019, and July 18, 2020.”</p>
+               <form id="myForm3" action="total_stats_country" method="GET">
+                  <label for="geo_ids"> Country or territory: </label>
+                  <select id="country/territory" name="country/territory">
+                     {% for place in geo %}
+                     <option value="{{place.geo_id}}"> {{ place.geo_id }} - {{ place.country_territory }} </option>
+                     {% endfor %}
+                  </select>
+                  <input type="submit" value="Show">
+                  <button type="button" onclick="buttonFunc3()"> Hide  </button>
+               </form>
+               <br>
+               <table id="my_table1" style="display: none;">
+                  <tr>
+                     <td>
+                        Country
+                     </td>
+                     <td id="country_data1">
+                     </td>
+                  </tr>
+                  <tr>
+                     <td>
+                        Cases
+                     </td>
+                     <td id="country_data2">
+                     </td>
+                  </tr>
+                  <tr>
+                     <td>
+                        Deaths
+                     </td>
+                     <td id="country_data3">
+                     </td>
+                  </tr>
+                  <tr>
+                     <td>
+                        Deathrate (Cases/Deaths)
+                     </td>
+                     <td id="country_data4">
+                     </td>
+                  </tr>
+                  <tr>
+                     <td>
+                        % of Population Infected (ignoring reinfections;cases/population in 2019)
+                     </td>
+                     <td id="country_data5">
+                     </td>
+                  </tr>
+                  <tr>
+                     <td>
+                        % of Population died of Coivd-19
+                     </td>
+                     <td id="country_data6">
+                     </td>
+                  </tr>
+               </table>
+            </div>
+         </div>
+      </main>
+      <footer class="footer">
+      </footer>
+      <script>
+         document.getElementById('myForm3').addEventListener('submit', function(event) {
+         
+         var element = document.getElementById('my_table1');
+         element.style.display = 'block';
+         }); 
+         
+         document.getElementById('myForm').addEventListener('submit', function(event) {
+         
+         var element = document.getElementById('p_cases_per_day');
+         element.style.display = 'block';
+         element = document.getElementById('p_deaths_per_day');
+         element.style.display = 'block';
+         element = document.getElementById('p_infectionrate');
+         element.style.display = 'block';
+         });
+         
+         function buttonFunc(){
+         $("#p_cases_per_day").css('display', 'none');
+         $("#p_deaths_per_day").css('display', 'none');
+         $("#p_infectionrate").css('display', 'none');
+         $("#placeholder").load(window.location.href + " #placeholder");
+         $("#placeholder2" ).load(window.location.href + " #placeholder2");
+         $("#placeholder3").load(window.location.href + " #placeholder3");
+         
+         $("#placeholder").height(0);
+         $("#placeholder").width(0);
+         
+         $("#placeholder2").height(0);
+         $("#placeholder2").width(0);
+         
+         
+         $("#placeholder3").height(0);
+         $("#placeholder3").width(0);
+         
+         };
+         
+         function buttonFunc3(){
+         // Hide the table
+         $("#my_table1").css('display', 'none');
+         $("#country_data1").load(window.location.href + " #country_data1");
+         $("#country_data2" ).load(window.location.href + " #country_data2");
+         $("#country_data3").load(window.location.href + " #country_data3");
+         $("#country_data4").load(window.location.href + " #country_data4");
+         $("#country_data5" ).load(window.location.href + " #country_data5");
+         $("#country_data6").load(window.location.href + " #country_data6");
+         }
+         
+      </script>
+   </body>
+</html>

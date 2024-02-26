@@ -102,7 +102,7 @@ def total_stats_country(request):
     geo = GeoDistribution.objects.get(pk=query[0]['geo_id'])
     sum_cases = query[0]['sum_cases']
     sum_deaths = query[0]['sum_deaths']
-    query_list = [geo.country_territory, sum_cases,sum_deaths,sum_deaths/sum_cases,sum_cases/geo.pop2019,sum_deaths/geo.pop2019]
+    query_list = [geo.country_territory, sum_cases,sum_deaths,sum_deaths/sum_cases,sum_cases/geo.pop2019*100,sum_deaths/geo.pop2019*100]
     return JsonResponse(query_list,safe=False)
 
 def countries_by_sum_cases(request):
